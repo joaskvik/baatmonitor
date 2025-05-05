@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <title>Adminpanel - Båtlogger</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 30px; }
+        h1 { font-size: 24px; }
+        a { display: block; margin: 10px 0; font-size: 18px; text-decoration: none; color: #007bff; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Oversikt over båter</h1>
+    {% for bat in båter %}
+        <a href="{{ url_for('vis_logg_for_bat', batnavn=bat.replace(' ', '_')) }}">{{ bat }}</a>
+    {% else %}
+        <p>Ingen båter registrert.</p>
+    {% endfor %}
+</body>
+</html>
