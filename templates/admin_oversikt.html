@@ -4,19 +4,54 @@
     <meta charset="UTF-8">
     <title>Oversikt over båter</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 30px; }
-        h1 { font-size: 26px; }
-        ul { list-style: none; padding: 0; }
-        li { margin-bottom: 20px; }
-        a { text-decoration: none; color: #333; font-size: 18px; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f4f4;
+            padding: 30px;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: white;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        a {
+            text-decoration: none;
+            font-size: 20px;
+            color: #007BFF;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
         .status-ok { color: green; font-weight: bold; }
         .status-feil { color: red; font-weight: bold; }
         .status-ukjent { color: gray; font-weight: bold; }
-        .tidspunkt { font-size: 12px; color: #666; margin-left: 10px; }
-        .posisjon { font-size: 14px; color: #555; margin-left: 15px; }
+        .tidspunkt {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .posisjon {
+            font-size: 14px;
+            color: #555;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
+
     <h1>Oversikt over båter</h1>
 
     <ul>
@@ -25,19 +60,18 @@
                 <a href="{{ url_for('vis_logg_for_bat', batnavn=bat['navn'].replace(' ', '_')) }}">
                     {{ bat['navn'] }}
                 </a>
-                -
                 {% if bat['status'].lower() == 'ok' %}
-                    <span class="status-ok">{{ bat['status'].upper() }}</span>
+                    <div class="status-ok">{{ bat['status'].upper() }}</div>
                 {% elif bat['status'].lower() == 'feil' %}
-                    <span class="status-feil">{{ bat['status'].upper() }}</span>
+                    <div class="status-feil">{{ bat['status'].upper() }}</div>
                 {% else %}
-                    <span class="status-ukjent">{{ bat['status'].upper() }}</span>
+                    <div class="status-ukjent">{{ bat['status'].upper() }}</div>
                 {% endif %}
                 {% if bat['tid'] %}
-                    <span class="tidspunkt">({{ bat['tid'] }})</span>
+                    <div class="tidspunkt">Sist oppdatert: {{ bat['tid'] }}</div>
                 {% endif %}
                 {% if bat['posisjon'] %}
-                    <span class="posisjon">📍 {{ bat['posisjon'] }}</span>
+                    <div class="posisjon">📍 {{ bat['posisjon'] }}</div>
                 {% endif %}
             </li>
         {% endfor %}
