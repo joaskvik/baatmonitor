@@ -2,20 +2,42 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <title>Adminpanel - Båtlogger</title>
+    <title>Oversikt over båter</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 30px; }
-        h1 { font-size: 24px; }
-        a { display: block; margin: 10px 0; font-size: 18px; text-decoration: none; color: #007bff; }
-        a:hover { text-decoration: underline; }
+        h1 { font-size: 26px; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 15px; }
+        a { text-decoration: none; color: #333; font-size: 18px; }
+        .status-ok { color: green; font-weight: bold; }
+        .status-feil { color: red; font-weight: bold; }
+        .status-ukjent { color: gray; font-weight: bold; }
+        .tidspunkt { font-size: 12px; color: #666; margin-left: 10px; }
     </style>
 </head>
 <body>
     <h1>Oversikt over båter</h1>
-    {% for bat in båter %}
-        <a href="{{ url_for('vis_logg_for_bat', batnavn=bat.replace(' ', '_')) }}">{{ bat }}</a>
-    {% else %}
-        <p>Ingen båter registrert.</p>
-    {% endfor %}
+
+    <ul>
+        {% for bat in båter %}
+            <li>
+                <a href="{{ url_for('vis_logg_for_bat', batnavn=bat['navn'].replace(' ', '_')) }}">
+                    {{ bat['navn'] }}
+                </a>
+                -
+                {% if bat['status'].lower() == 'ok' %}
+                    <span class="status-ok">{{ bat['status'].upper() }}</span>
+                {% elif bat['status'].lower() == 'feil' %}
+                    <span class="status-feil">{{ bat['status'].upper() }}</span>
+                {% else %}
+                    <span class="status-ukjent">{{ bat['status'].upper() }}</span>
+                {% endif %}
+                {% if bat['tid'] %}
+                    <span class="tidspunkt">({{ bat['tid'] }})</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
 </body>
 </html>
