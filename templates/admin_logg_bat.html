@@ -9,6 +9,18 @@
             background-color: #f4f4f4;
             margin: 20px;
         }
+        .status-ok {
+            color: green;
+            font-weight: bold;
+        }
+        .status-feil {
+            color: red;
+            font-weight: bold;
+        }
+        .status-ukjent {
+            color: orange;
+            font-weight: bold;
+        }
         pre {
             background: white;
             padding: 20px;
@@ -22,6 +34,13 @@
             text-decoration: none;
             color: #007bff;
         }
+        .info-box {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body>
@@ -29,6 +48,12 @@
 <h1>Logg for {{ batnavn }}</h1>
 
 <a href="{{ url_for('oversikt') }}">← Tilbake til oversikt</a>
+
+<div class="info-box">
+    <p><strong>Status:</strong> <span class="status-{{ status|lower }}">{{ status }}</span></p>
+    <p><strong>Oppdatert:</strong> {{ tid }}</p>
+    <p><strong>Posisjon:</strong> {{ posisjon }}</p>
+</div>
 
 <pre>{{ logginnhold }}</pre>
 
