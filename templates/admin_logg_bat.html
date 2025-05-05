@@ -9,18 +9,9 @@
             background-color: #f4f4f4;
             margin: 20px;
         }
-        .status-ok {
-            color: green;
-            font-weight: bold;
-        }
-        .status-feil {
-            color: red;
-            font-weight: bold;
-        }
-        .status-ukjent {
-            color: orange;
-            font-weight: bold;
-        }
+        .status-ok { color: green; font-weight: bold; }
+        .status-feil { color: red; font-weight: bold; }
+        .status-ukjent { color: orange; font-weight: bold; }
         pre {
             background: white;
             padding: 20px;
@@ -41,6 +32,11 @@
             border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0,0,0,0.05);
         }
+        iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -52,8 +48,12 @@
 <div class="info-box">
     <p><strong>Status:</strong> <span class="status-{{ status|lower }}">{{ status }}</span></p>
     <p><strong>Oppdatert:</strong> {{ tid }}</p>
-    <p><strong>Posisjon:</strong> {{ posisjon }}</p>
+    <p><strong>Posisjon:</strong> {{ posisjon }} {% if latitude and longitude %}({{ latitude }}° N, {{ longitude }}° E){% endif %}</p>
 </div>
+
+{% if latitude and longitude %}
+<iframe src="https://www.openstreetmap.org/export/embed.html?bbox={{ longitude|float -0.01 }},{{ latitude|float -0.01 }},{{ longitude|float +0.01 }},{{ latitude|float +0.01 }}&layer=mapnik&marker={{ latitude }},{{ longitude }}"></iframe>
+{% endif %}
 
 <pre>{{ logginnhold }}</pre>
 
