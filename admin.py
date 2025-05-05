@@ -41,5 +41,22 @@ def registrer():
     lagre_logger(data)
     return redirect(url_for('oversikt'))
 
+@app.route('/opplasting', methods=['POST'])
+def opplasting():
+    if 'fil' not in request.files or 'båt' not in request.form:
+        return 'Mangler fil eller båtnavn.', 400
+
+    fil = request.files['fil']
+    batnavn = request.form['båt'].replace(' ', '_')
+
+    mappe = os.path.join('batlogger', batnavn)
+    os.makedirs(mappe, exist_ok=True)
+
+    filsti = os.path.join(mappe, 'konverteringslogg.txt')
+    fil.save(filsti)
+
+    return 'Fil mottatt OK.', 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
