@@ -7,12 +7,13 @@
         body { font-family: 'Segoe UI', sans-serif; margin: 30px; }
         h1 { font-size: 26px; }
         ul { list-style: none; padding: 0; }
-        li { margin-bottom: 15px; }
+        li { margin-bottom: 20px; }
         a { text-decoration: none; color: #333; font-size: 18px; }
         .status-ok { color: green; font-weight: bold; }
         .status-feil { color: red; font-weight: bold; }
         .status-ukjent { color: gray; font-weight: bold; }
         .tidspunkt { font-size: 12px; color: #666; margin-left: 10px; }
+        .posisjon { font-size: 14px; color: #555; margin-left: 15px; }
     </style>
 </head>
 <body>
@@ -34,6 +35,9 @@
                 {% endif %}
                 {% if bat['tid'] %}
                     <span class="tidspunkt">({{ bat['tid'] }})</span>
+                {% endif %}
+                {% if bat['posisjon'] %}
+                    <span class="posisjon">📍 {{ bat['posisjon'] }}</span>
                 {% endif %}
             </li>
         {% endfor %}
