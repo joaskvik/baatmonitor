@@ -22,11 +22,39 @@ def lagre_logger(data):
 @app.route('/')
 def oversikt():
     logger = hent_logger()
+    status_per_bat = {}
+
+    # Finn siste status + tidspunkt for hver båt
+    for logg in logger:
+        status_per_bat[logg['båt']] = {
+            'status': logg['status'],
+            'tid': logg['tid']
+        }
+
     båter = set(logg['båt'] for logg in logger)
+
+    # Hent båter fra opplastede logger også
     if os.path.exists(BATLOGGER_MAPPE):
         for batnavn in os.listdir(BATLOGGER_MAPPE):
-            båter.add(batnavn.replace('_', ' '))
-    return render_template('admin_oversikt.html', båter=båter)
+            batnavn_clean = batnavn.replace('_', ' ')
+            båter.add(batnavn_clean)
+            if batnavn_clean not in status_per_bat:
+                status_per_bat[batnavn_clean] = {
+                    'status': 'Ukjent',
+                    'tid': ''
+                }
+
+    # Bygg liste for template
+    båtliste = []
+    for bat in båter:
+        båtliste.append({
+            'navn': bat,
+            'status': status_per_bat.get(bat, {}).get('status', 'Ukjent'),
+            'tid': status_per_bat.get(bat, {}).get('tid', '')
+        })
+
+    return render_template('admin_oversikt.html', båter=båtliste)
+
 
 @app.route('/logg/<batnavn>')
 def vis_logg_for_bat(batnavn):
