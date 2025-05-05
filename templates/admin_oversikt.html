@@ -2,68 +2,35 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <title>Båtoversikt</title>
+    <title>Logg for {{ batnavn }}</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        pre {
+            background: white;
             padding: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-        }
-        th, td {
             border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            overflow-x: auto;
         }
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .status-ok {
-            color: green;
-            font-weight: bold;
-        }
-        .status-feil {
-            color: red;
-            font-weight: bold;
-        }
-        .status-ukjent {
-            color: orange;
-            font-weight: bold;
+        a {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #007bff;
         }
     </style>
 </head>
 <body>
 
-<h1>Båtoversikt</h1>
+<h1>Logg for {{ batnavn }}</h1>
 
-<table>
-    <thead>
-        <tr>
-            <th>Båtnavn</th>
-            <th>Status</th>
-            <th>Tidspunkt</th>
-            <th>Posisjon</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for båt in båter %}
-        <tr>
-            <td><a href="{{ url_for('vis_logg_for_bat', batnavn=båt.navn.replace(' ', '_')) }}">{{ båt.navn }}</a></td>
-            <td class="status-{{ båt.status.lower() }}">{{ båt.status }}</td>
-            <td>{{ båt.tid }}</td>
-            <td>{{ båt.posisjon }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<a href="{{ url_for('oversikt') }}">← Tilbake til oversikt</a>
+
+<pre>{{ logginnhold }}</pre>
 
 </body>
 </html>
