@@ -36,7 +36,9 @@ def registrer():
         "båt": request.form.get('båt', 'Ukjent båt'),
         "status": request.form.get('status', 'ukjent'),
         "tid": request.form.get('tid', datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-        "posisjon": request.form.get('posisjon', 'Ukjent posisjon')
+        "posisjon": request.form.get('posisjon', 'Ukjent posisjon'),
+        "latitude": request.form.get('latitude', None),
+        "longitude": request.form.get('longitude', None)
     }
 
     eksisterende = next((d for d in data if d['båt'] == nytt_innslag['båt']), None)
@@ -47,6 +49,7 @@ def registrer():
 
     lagre_logger(data)
     return redirect(url_for('oversikt'))
+
 
 @app.route('/opplasting', methods=['POST'])
 def opplasting():
