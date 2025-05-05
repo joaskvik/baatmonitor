@@ -70,14 +70,25 @@ def vis_logg_for_bat(batnavn):
 @app.route('/registrer', methods=['POST'])
 def registrer():
     data = hent_logger()
+
     nytt_innslag = {
         "båt": request.form['båt'],
         "status": request.form['status'],
         "tid": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
-    data.append(nytt_innslag)
+
+    # Sjekk om båten allerede finnes → da OPPDATER vi, ikke legg til
+    eksisterende = next((d for d in data if d['båt'] == nytt_innslag['båt']), None)
+
+    if eksisterende:
+        eksisterende['status'] = nytt_innslag['status']
+        eksisterende['tid'] = nytt_innslag['tid']
+    else:
+        data.append(nytt_innslag)
+
     lagre_logger(data)
     return redirect(url_for('oversikt'))
+
 
 @app.route('/opplasting', methods=['POST'])
 def opplasting():
