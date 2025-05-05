@@ -64,13 +64,32 @@ def opplasting():
 @app.route('/logg/<batnavn>')
 def vis_logg_for_bat(batnavn):
     filsti = os.path.join(LOGG_MAPPE, f"{batnavn}_logg.txt")
+    data = hent_logger()
+
+    # Finn båtinformasjon
+    batinfo = next((d for d in data if d['båt'].replace(' ', '_') == batnavn), None)
+
+    if not batinfo:
+        batinfo = {
+            'status': 'ukjent',
+            'tid': 'ukjent',
+            'posisjon': 'ukjent'
+        }
+
     if not os.path.exists(filsti):
-        return f"Ingen logg funnet for {batnavn}", 404
+        logginnhold = "Ingen logg funnet."
+    else:
+        with open(filsti, 'r', encoding='utf-8') as f:
+            logginnhold = f.read()
 
-    with open(filsti, 'r', encoding='utf-8') as f:
-        logginnhold = f.read()
-
-    return render_template('admin_logg_bat.html', batnavn=batnavn.replace('_', ' '), logginnhold=logginnhold)
+    return render_template(
+        'admin_logg_bat.html',
+        batnavn=batnavn.replace('_', ' '),
+        logginnhold=logginnhold,
+        status=batinfo['status'],
+        tid=batinfo['tid'],
+        posisjon=batinfo['posisjon']
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
