@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import json
 from datetime import datetime
+import requests
 
 app = Flask(__name__)
 
@@ -20,40 +21,33 @@ def lagre_logger(data):
     with open(DATAFIL, 'w', encoding='utf-8') as fil:
         json.dump(data, fil, indent=4, ensure_ascii=False)
 
+# Hente ca posisjon basert på IP
+def hent_posisjon(ip_adresse):
+    try:
+        respons = requests.get(f"https://ipapi.co/{ip_adresse}/json/")
+        if respons.status_code == 200:
+            data = respons.json()
+            return f"{data.get('city', 'Ukjent')}, {data.get('country_name', 'Ukjent')}"
+        else:
+            return "Ukjent posisjon"
+    except Exception as e:
+        print(f"[Feil] Kunne ikke hente posisjon: {e}")
+        return "Ukjent posisjon"
+
 @app.route('/')
 def oversikt():
     logger = hent_logger()
-    status_per_bat = {}
-
-    # Finn siste status + tidspunkt for hver båt
-    for logg in logger:
-        status_per_bat[logg['båt']] = {
-            'status': logg['status'],
-            'tid': logg['tid']
-        }
-
-    båter = set(logg['båt'] for logg in logger)
-
-    # Hent båter fra opplastede logger også
-    if os.path.exists(BATLOGGER_MAPPE):
-        for batnavn in os.listdir(BATLOGGER_MAPPE):
-            batnavn_clean = batnavn.replace('_', ' ')
-            båter.add(batnavn_clean)
-            if batnavn_clean not in status_per_bat:
-                status_per_bat[batnavn_clean] = {
-                    'status': 'Ukjent',
-                    'tid': ''
-                }
 
     båtliste = []
-    for bat in båter:
+    for logg in logger:
         båtliste.append({
-            'navn': bat,
-            'status': status_per_bat.get(bat, {}).get('status', 'Ukjent'),
-            'tid': status_per_bat.get(bat, {}).get('tid', '')
+            'navn': logg['båt'],
+            'status': logg.get('status', 'Ukjent'),
+            'tid': logg.get('tid', ''),
+            'posisjon': logg.get('posisjon', 'Ukjent posisjon')
         })
 
-    # 🚦 Sorter: FEIL først, så UKJENT, så OK
+    # Sorter: FEIL først, så UKJENT, så OK
     båtliste.sort(key=lambda x: (0 if x['status'].lower() == 'feil' else (1 if x['status'].lower() == 'ukjent' else 2), x['navn']))
 
     return render_template('admin_oversikt.html', båter=båtliste)
@@ -75,18 +69,22 @@ def vis_logg_for_bat(batnavn):
 @app.route('/registrer', methods=['POST'])
 def registrer():
     data = hent_logger()
+
+    ip_adresse = request.remote_addr
+    posisjon = hent_posisjon(ip_adresse)
+
     nytt_innslag = {
         "båt": request.form['båt'],
         "status": request.form['status'],
-        "tid": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        "tid": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "posisjon": posisjon
     }
 
-    # 🛠️ OVERSKRIV status for båten hvis den finnes
+    # Sjekk om båten allerede finnes, oppdater hvis ja
     eksisterende = next((d for d in data if d['båt'] == nytt_innslag['båt']), None)
 
     if eksisterende:
-        eksisterende['status'] = nytt_innslag['status']
-        eksisterende['tid'] = nytt_innslag['tid']
+        eksisterende.update(nytt_innslag)
     else:
         data.append(nytt_innslag)
 
