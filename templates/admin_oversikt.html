@@ -2,35 +2,69 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <title>Logg for {{ batnavn }}</title>
+    <title>Admin - Båtoversikt</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: #f4f4f4;
             margin: 20px;
         }
-        pre {
+        table {
+            width: 100%;
+            border-collapse: collapse;
             background: white;
-            padding: 20px;
-            border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0,0,0,0.05);
-            overflow-x: auto;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .status-ok {
+            color: green;
+            font-weight: bold;
+        }
+        .status-feil {
+            color: red;
+            font-weight: bold;
+        }
+        .status-ukjent {
+            color: orange;
+            font-weight: bold;
         }
         a {
-            display: inline-block;
-            margin-bottom: 20px;
-            text-decoration: none;
             color: #007bff;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 
-<h1>Logg for {{ batnavn }}</h1>
+<h1>Båtoversikt</h1>
 
-<a href="{{ url_for('oversikt') }}">← Tilbake til oversikt</a>
-
-<pre>{{ logginnhold }}</pre>
+<table>
+    <thead>
+        <tr>
+            <th>Båtnavn</th>
+            <th>Status</th>
+            <th>Oppdatert</th>
+            <th>Posisjon</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bat in båter %}
+        <tr>
+            <td><a href="{{ url_for('vis_logg_for_bat', batnavn=bat['båt'].replace(' ', '_')) }}">{{ bat['båt'] }}</a></td>
+            <td class="status-{{ bat['status'].lower() }}">{{ bat['status'] }}</td>
+            <td>{{ bat['tid'] }}</td>
+            <td>{{ bat['posisjon'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 </body>
 </html>
