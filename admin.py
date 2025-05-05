@@ -9,19 +9,16 @@ app = Flask(__name__)
 DATAFIL = 'batlogger.json'
 BATLOGGER_MAPPE = 'batlogger'
 
-# Hjelpefunksjon for å laste logger
 def hent_logger():
     if not os.path.exists(DATAFIL):
         return []
     with open(DATAFIL, 'r', encoding='utf-8') as fil:
         return json.load(fil)
 
-# Hjelpefunksjon for å lagre logger
 def lagre_logger(data):
     with open(DATAFIL, 'w', encoding='utf-8') as fil:
         json.dump(data, fil, indent=4, ensure_ascii=False)
 
-# Hente ca posisjon basert på IP
 def hent_posisjon(ip_adresse):
     try:
         respons = requests.get(f"https://ipapi.co/{ip_adresse}/json/")
@@ -37,7 +34,6 @@ def hent_posisjon(ip_adresse):
 @app.route('/')
 def oversikt():
     logger = hent_logger()
-
     båtliste = []
     for logg in logger:
         båtliste.append({
@@ -46,48 +42,36 @@ def oversikt():
             'tid': logg.get('tid', ''),
             'posisjon': logg.get('posisjon', 'Ukjent posisjon')
         })
-
-    # Sorter: FEIL først, så UKJENT, så OK
     båtliste.sort(key=lambda x: (0 if x['status'].lower() == 'feil' else (1 if x['status'].lower() == 'ukjent' else 2), x['navn']))
-
     return render_template('admin_oversikt.html', båter=båtliste)
 
 @app.route('/logg/<batnavn>')
 def vis_logg_for_bat(batnavn):
     logger = hent_logger()
     filtrert = [logg for logg in logger if logg['båt'].replace(' ', '_') == batnavn]
-
-    # Legg til fil fra opplastet logg
     loggfilsti = os.path.join(BATLOGGER_MAPPE, batnavn, 'konverteringslogg.txt')
     if os.path.exists(loggfilsti):
         with open(loggfilsti, 'r', encoding='utf-8') as f:
             for linje in f:
                 filtrert.append({"tid": "Filopplastet", "status": linje.strip()})
-
     return render_template('admin_logg_bat.html', logger=filtrert, batnavn=batnavn)
 
 @app.route('/registrer', methods=['POST'])
 def registrer():
     data = hent_logger()
-
     ip_adresse = request.remote_addr
     posisjon = hent_posisjon(ip_adresse)
-
     nytt_innslag = {
         "båt": request.form['båt'],
         "status": request.form['status'],
         "tid": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "posisjon": posisjon
     }
-
-    # Sjekk om båten allerede finnes, oppdater hvis ja
     eksisterende = next((d for d in data if d['båt'] == nytt_innslag['båt']), None)
-
     if eksisterende:
         eksisterende.update(nytt_innslag)
     else:
         data.append(nytt_innslag)
-
     lagre_logger(data)
     return redirect(url_for('oversikt'))
 
@@ -95,16 +79,12 @@ def registrer():
 def opplasting():
     if 'fil' not in request.files or 'båt' not in request.form:
         return 'Mangler fil eller båtnavn.', 400
-
     fil = request.files['fil']
     batnavn = request.form['båt'].replace(' ', '_')
-
     mappe = os.path.join(BATLOGGER_MAPPE, batnavn)
     os.makedirs(mappe, exist_ok=True)
-
     filsti = os.path.join(mappe, 'konverteringslogg.txt')
     fil.save(filsti)
-
     return 'Fil mottatt OK.', 200
 
 if __name__ == '__main__':
