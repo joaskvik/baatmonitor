@@ -1,9 +1,9 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template
 import os
 
 app = Flask(__name__)
 
-BÅTLOGG_MAPPE = 'båtlogger'  # Her lagres alle båt-loggfilene
+BÅTLOGG_MAPPE = 'båtlogger'
 
 @app.route('/')
 def index():
@@ -17,7 +17,7 @@ def index():
 
 @app.route('/logg/<båtnavn>')
 def vis_båtlogg(båtnavn):
-    filsti = os.path.join(BÅTLOGG_MAPPE, f'konverteringslogg_{båtnavn.replace(\" \", \"_\")}.txt')
+    filsti = os.path.join(BÅTLOGG_MAPPE, f'konverteringslogg_{båtnavn.replace(" ", "_")}.txt')
     logglinjer = []
 
     if os.path.exists(filsti):
