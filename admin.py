@@ -59,21 +59,23 @@ def vis_logg_for_bat(batnavn):
 @app.route('/registrer', methods=['POST'])
 def registrer():
     data = hent_logger()
-    ip_adresse = request.remote_addr
-    posisjon = hent_posisjon(ip_adresse)
+
     nytt_innslag = {
         "båt": request.form['båt'],
         "status": request.form['status'],
-        "tid": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "posisjon": posisjon
+        "tid": request.form.get('tid', datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        "posisjon": request.form.get('posisjon', 'Ukjent posisjon')  # 👈 her er forskjellen!
     }
+
     eksisterende = next((d for d in data if d['båt'] == nytt_innslag['båt']), None)
     if eksisterende:
         eksisterende.update(nytt_innslag)
     else:
         data.append(nytt_innslag)
+
     lagre_logger(data)
     return redirect(url_for('oversikt'))
+
 
 @app.route('/opplasting', methods=['POST'])
 def opplasting():
