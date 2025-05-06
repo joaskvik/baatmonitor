@@ -1,32 +1,29 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for
 import os
 import json
 from datetime import datetime
 
 app = Flask(__name__)
 
-LOGG_MAPPE = "båtlogger"
-STATUS_FIL = "status.json"
-
-# Sørg for at mappen finnes
+STATUSFIL = "status.json"
+LOGG_MAPPE = "logger"
 os.makedirs(LOGG_MAPPE, exist_ok=True)
 
 def hent_logger():
-    if os.path.exists(STATUS_FIL):
-        with open(STATUS_FIL, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return []
+    if not os.path.exists(STATUSFIL):
+        return []
+    with open(STATUSFIL, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
 def lagre_logger(data):
-    with open(STATUS_FIL, 'w', encoding='utf-8') as f:
+    with open(STATUSFIL, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 @app.route('/')
 def oversikt():
     data = hent_logger()
-    # Sorter: Feil først, så OK
-    data = sorted(data, key=lambda x: (x['status'] != 'feil', x['båt']))
-    return render_template('admin_oversikt.html', båter=data)
+    data.sort(key=lambda x: (x['status'] != 'feil', x['båt']))
+    return render_template('admin_oversikt.html', data=data)
 
 @app.route('/registrer', methods=['POST'])
 def registrer():
@@ -50,33 +47,33 @@ def registrer():
     lagre_logger(data)
     return redirect(url_for('oversikt'))
 
-
 @app.route('/opplasting', methods=['POST'])
 def opplasting():
-    if 'fil' not in request.files or 'båt' not in request.form:
-        return "Feil: Mangler fil eller båtnavn", 400
+    if 'fil' not in request.files:
+        return 'Ingen fil', 400
 
     fil = request.files['fil']
-    båt = request.form['båt'].replace(' ', '_')
+    båtnavn = request.form.get('båt', 'ukjent_båt').replace(' ', '_')
 
-    filsti = os.path.join(LOGG_MAPPE, f"{båt}_logg.txt")
-    fil.save(filsti)
-
-    return "Opplasting fullført", 200
+    if fil:
+        fil.save(os.path.join(LOGG_MAPPE, f"{båtnavn}_logg.txt"))
+        return 'OK', 200
+    return 'Feil', 400
 
 @app.route('/logg/<batnavn>')
 def vis_logg_for_bat(batnavn):
     filsti = os.path.join(LOGG_MAPPE, f"{batnavn}_logg.txt")
     data = hent_logger()
 
-    # Finn båtinformasjon
     batinfo = next((d for d in data if d['båt'].replace(' ', '_') == batnavn), None)
 
     if not batinfo:
         batinfo = {
             'status': 'ukjent',
             'tid': 'ukjent',
-            'posisjon': 'ukjent'
+            'posisjon': 'ukjent',
+            'latitude': None,
+            'longitude': None
         }
 
     if not os.path.exists(filsti):
@@ -91,8 +88,10 @@ def vis_logg_for_bat(batnavn):
         logginnhold=logginnhold,
         status=batinfo['status'],
         tid=batinfo['tid'],
-        posisjon=batinfo['posisjon']
+        posisjon=batinfo['posisjon'],
+        latitude=batinfo['latitude'],
+        longitude=batinfo['longitude']
     )
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
